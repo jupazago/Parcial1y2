@@ -3,18 +3,30 @@
 #include <string>
 #include <exception>
 #include <stdlib.h> //cls // Limpiar consola
+#include <map>
+#include <vector>
 
 using namespace std;
+
+//Estructuran Publica
+struct Producto{
+    string nombre;
+    int cantidad;
+    int costo;
+};
 
 void Panel1();
 void Panel2();
 bool IniciarSesion();
 void CrearUsuario();
+map<int,Producto> lecturaDeInventario();
 
 int main()
 {
     int admOuser=1, opcion;
-    bool perfilAdm, perfilClient;
+    bool perfilAdm;
+
+    map<int,Producto> Inventario; //Vacío
 
     while (admOuser > 0) {
         system("cls");
@@ -25,12 +37,17 @@ int main()
             system("cls");
             //Ingresaremos datos para compararlos con el txt
             perfilAdm=IniciarSesion();
+            //true si se inicio con exito la sesion
+
             //Encontraremos todo el menu de Administrador
             if(perfilAdm==true){
                 Panel2();
                 cin >> opcion;
                 if(opcion==1){
                     CrearUsuario();
+                }else if(opcion==2){
+
+                    Inventario=lecturaDeInventario();//Llenamos el Inventario del txt
                 }
             }
 
@@ -150,4 +167,41 @@ void CrearUsuario(){
     escritura.open("administrador.txt",ios::app);
     escritura << datos;
     escritura.close();
+}
+map<int,Producto> lecturaDeInventario(){
+    string NombreProdu;
+    int IDprodu, CantiProdu, CostoProdu;
+    ifstream lectura;
+
+    //mapa de clave ID y valor de tipo estructura Producto
+    map<int,Producto> Inventario; //mapa se llama Inventario, está vacio.
+    map<int,Producto>::iterator it;
+
+    Producto producto;
+
+    lectura.open("inventario.txt", ios::in);
+    int i=1;
+    while (!lectura.eof()) {
+        lectura >> IDprodu;
+        lectura >> NombreProdu;
+        lectura >> CantiProdu;
+        lectura >> CostoProdu;
+
+        producto.nombre=NombreProdu;
+        producto.cantidad=CantiProdu;
+        producto.costo=CostoProdu;
+        Inventario[i]=producto;
+        i++;
+    }
+
+    lectura.close();
+
+    for(auto par=begin(Inventario); par!=end(Inventario); par++){
+        cout << par->first <<" ";
+        cout<<par->second.nombre <<" "<<par->second.cantidad <<" "<<par->second.costo<<endl;
+    }
+    system("pause");
+
+    return Inventario;
+
 }

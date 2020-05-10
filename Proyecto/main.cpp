@@ -9,6 +9,7 @@ using namespace std;
 void Panel1();
 void Panel2();
 bool IniciarSesion();
+void CrearUsuario();
 
 int main()
 {
@@ -28,6 +29,9 @@ int main()
             if(perfilAdm==true){
                 Panel2();
                 cin >> opcion;
+                if(opcion==1){
+                    CrearUsuario();
+                }
             }
 
         }else if(admOuser==2) {
@@ -47,7 +51,9 @@ void Panel1(){
 void Panel2(){
     cout << "/////////////////////////" << endl;
     cout << "1: Crear Otra cuenta Administracion" << endl;
-    cout << "2: Usuario/Cliente" << endl<<endl;
+    cout << "2: Agregar/Actualizar producto Inventario" << endl;
+    cout << "3: Crear combos" << endl;
+    cout << "4: Generar Reporte de Ventas" << endl<<endl;
     cout << "Eleccion: ";
 }
 bool IniciarSesion(){
@@ -86,16 +92,17 @@ bool IniciarSesion(){
             throw '3';
         }
 
+        //Comparamos la clave ingresada por el usuario vs la registrada en el txt
         size_t pos1 = texto.find(user);
         texto = texto.substr(pos1);
-        cout << texto<<endl<<endl; //Buscar el usuario
+        //cout << texto<<endl<<endl; //Buscar el usuario
         string clave = texto.substr(tamano_user+1,4);
-        cout <<endl<<clave<<endl;
+        //cout <<endl<<clave<<endl;
 
 
         if(pass==clave){
             system("cls");
-            cout << "Hola administrador"<<endl<<endl;
+            cout << "Hola administrador"<<endl;
             return true;
         }else{
             throw '2';
@@ -103,7 +110,7 @@ bool IniciarSesion(){
 
     } catch (char excepcion) {
         if(excepcion == '1'){
-            cout << "Error de lectura en SUDO"<<endl;
+            cout << "Error de lectura"<<endl;
         }else if(excepcion == '2'){
             cout << "Datos Incorrectos"<<endl;
         }else if(excepcion == '3'){
@@ -112,4 +119,35 @@ bool IniciarSesion(){
         system("pause");
         return false;
     }
+}
+void CrearUsuario(){
+    string usuario, contrasenia;
+    bool quedarse=false;
+    int tcontrasenia;
+
+    system("cls");
+    cout << endl<<"Tenga en Cuenta"<<endl;
+    cout << "*La clave debe tene unicamente 4 digitos"<<endl;
+
+    cout<<endl<<"Ingrese el usuario a registrar: ";
+    cin >> usuario;
+
+    while(quedarse==false){
+        cout<<endl<<"Ingrese la clave: ";
+        cin >> contrasenia;
+        tcontrasenia = contrasenia.size();
+        if(tcontrasenia==4){
+            quedarse=true;
+        }else{
+            quedarse=false;
+        }
+    }
+
+    string datos= " "+usuario+" "+contrasenia;
+
+    ofstream escritura;
+    //guardar en el texto de base de datos
+    escritura.open("administrador.txt",ios::app);
+    escritura << datos;
+    escritura.close();
 }

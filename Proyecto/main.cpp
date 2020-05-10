@@ -1,5 +1,5 @@
 #include <iostream>
-#include <fstream> //eof
+#include <fstream> //eof //Manejor de archivos
 #include <string>
 #include <exception>
 #include <stdlib.h> //cls // Limpiar consola
@@ -20,6 +20,8 @@ void Panel2();
 bool IniciarSesion();
 void CrearUsuario();
 map<int,Producto> lecturaDeInventario();
+map<int,Producto> AgregarActualizar(map<int,Producto> Inventario);
+void ImprimirInventario(map<int,Producto> Inventario);
 
 int main()
 {
@@ -40,14 +42,15 @@ int main()
             //true si se inicio con exito la sesion
 
             //Encontraremos todo el menu de Administrador
-            if(perfilAdm==true){
+            while(perfilAdm==true){
                 Panel2();
                 cin >> opcion;
                 if(opcion==1){
                     CrearUsuario();
                 }else if(opcion==2){
+                    Inventario = lecturaDeInventario();//Llenamos el Inventario del txt
+                    Inventario = AgregarActualizar(Inventario);
 
-                    Inventario=lecturaDeInventario();//Llenamos el Inventario del txt
                 }
             }
 
@@ -196,12 +199,79 @@ map<int,Producto> lecturaDeInventario(){
 
     lectura.close();
 
-    for(auto par=begin(Inventario); par!=end(Inventario); par++){
-        cout << par->first <<" ";
-        cout<<par->second.nombre <<" "<<par->second.cantidad <<" "<<par->second.costo<<endl;
-    }
+    ImprimirInventario(Inventario);
     system("pause");
 
     return Inventario;
 
+}
+map<int,Producto> AgregarActualizar(map<int,Producto> Inventario){
+    try {
+
+
+        Producto producto;
+        bool encontrado=false;
+        int ncantidad, ncosto;
+        int nombre;
+        cout << "Ingresa ID del producto: ";
+        cin >> nombre;
+
+
+        for(auto par=begin(Inventario); par!=end(Inventario); par++){
+            //cout <<"ID: "<< par->first <<endl;
+            if(par->first == nombre && encontrado==false){
+
+                cout << "El producto "<<par->second.nombre<<" ya existe"<<endl<<endl;
+                cout << "La cantidad actual es: "<< par->second.cantidad<<endl;
+                cout << "La Nueva cantidad sera: ";
+                cin >> ncantidad;
+                par->second.cantidad = ncantidad;
+
+                cout << "El precio actual por unidad es: "<< par->second.costo<<endl;
+                cout << "El nuevo precio por unidad sera: ";
+                cin >> ncosto;
+                par->second.costo = ncosto;
+                encontrado=true;
+            }
+        }
+
+        if(encontrado!=true){
+            cout << "Ingresa Cantidad producto";
+            cin >> ncantidad;
+            cout << "Ingresa Costo por unidad del producto";
+            cin >> ncosto;
+            producto.nombre=nombre;
+            producto.cantidad=ncantidad;
+            producto.costo=ncosto;
+            int i=0;
+            for(auto par=begin(Inventario); par!=end(Inventario); par++){
+                //Cantidad de iteraciones por elemento de inventario
+                i++;
+            }
+
+            Inventario[i]=producto;
+            cout << "Creacion exitosa"<<endl;
+            ImprimirInventario(Inventario);
+
+        }else{
+            cout << "Actualizacion exitosa"<<endl;
+            ImprimirInventario(Inventario);
+        }
+        return Inventario;
+
+    } catch (char excepcion) {
+        cout << "ERROR"<<endl;
+        return Inventario;
+    }
+}
+void ImprimirInventario(map<int,Producto> Inventario){
+    cout <<endl<<endl<< "Lista Completa de Inventario"<<endl;
+    cout << "-----------------------------"<<endl;
+    for(auto par=begin(Inventario); par!=end(Inventario); par++){
+        cout <<"ID: "<< par->first <<endl;
+        cout <<par->second.nombre<<endl;
+        cout << "Cantidad: "<< par->second.cantidad<<endl;
+        cout << "Costo: " << par->second.costo<<endl<<endl;
+        cout << "-------------------"<<endl;
+    }
 }

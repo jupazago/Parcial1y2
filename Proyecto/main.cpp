@@ -28,7 +28,9 @@ void CrearUsuario();
 map<int,Producto> lecturaDeInventario();
 map<int,Producto> AgregarActualizar(map<int,Producto> Inventario);
 void ImprimirInventario(map<int,Producto> Inventario);
-void VerCombos();
+map<int,vector<Combo>> VerCombos(map<int,vector<Combo>> CombosInv);
+map<int,vector<Combo>> crearCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario);
+void GuardarCombos(map<int,vector<Combo>> CombosInv);
 
 int main()
 {
@@ -36,6 +38,8 @@ int main()
     bool perfilAdm;
 
     map<int,Producto> Inventario; //Vacío
+
+    map<int,vector<Combo>> CombosInv;
 
     while (admOuser > 0) {
         system("cls");
@@ -61,7 +65,10 @@ int main()
                     Inventario = AgregarActualizar(Inventario);
 
                 }else if(opcion==3){
-                    VerCombos();
+                    Inventario = lecturaDeInventario();//Visualizamos el inventario
+                    CombosInv = VerCombos(CombosInv); //llenar mapa de combos
+                    CombosInv = crearCombos(CombosInv,Inventario);
+                    GuardarCombos(CombosInv);
 
                 }
             }
@@ -329,12 +336,11 @@ void ImprimirInventario(map<int,Producto> Inventario){
         cout << "-------------------"<<endl;
     }
 }
-void VerCombos(){
+map<int,vector<Combo>> VerCombos(map<int,vector<Combo>> contenedor){
     string dato;
     int ID, n1, n2;
 
     try {
-        map<int,vector<Combo>> contenedor;
         Combo estrCombo;
 
 
@@ -359,22 +365,98 @@ void VerCombos(){
                 contenedor[ID].push_back(estrCombo);
             }
         }
-        cout <<"---------------------------------" <<endl<<endl;
+        /*
+        cout <<"---------------------------------" <<endl;
         for(auto par=begin(contenedor); par!=end(contenedor); par++){
             cout <<"Combo: "<< par->first <<endl;
-            cout <<"Id:          Cantidad:" <<endl;
+            cout <<"Id:    Cantidad:" <<endl;
             for(auto emp=begin(par->second);emp!=end(par->second); emp++){
-             cout<< emp->id<<"                 "<<emp->cantidad<<endl<<endl;
+             cout<< emp->id<<"     "<<emp->cantidad<<endl<<endl;
             }
             cout <<"---------------------------------" <<endl<<endl;
-        }
+        }*/
+        return contenedor;
     } catch (char excepcion) {
         cout << "Error"<<endl;
+        return contenedor;
     }
 }
 
+map<int,vector<Combo>> crearCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario){
+    system("cls");
+    int valor=1, cantid, id, contador=1, claveInv;
+    bool encontrado=false;
+    Producto produto;
+    Combo combo;
+    //  Verificamos cuantos combos tenemos en nuestro inventario de combos
+    //  para asigar asignar el ID al nuevo combo
+    for(auto par=begin(CombosInv); par!=end(CombosInv); par++){
+        contador++;
+    }
+
+    try {
+        cout<<"Ingresa 0 para no agregar productos"<<endl<<endl;
+        cout<<"Cualquier otro valor, continuar agregando"<<endl;
+        cin >> valor;
+        while(valor>0){
+            encontrado=false;
+
+            cout<<"Que producto deseas agregar al nuevo combo, ingresa su ID"<<endl;
+            cin >> id;
+            cout<<"cantidad: ";
+            cin >> cantid;
+
+            for(auto par=begin(Inventario); par!=end(Inventario); par++){
+                claveInv = par->first;
+                if(id==claveInv){
+                    combo.id=id;
+                    combo.cantidad=cantid;
+                    CombosInv[contador].push_back(combo);
+                    encontrado=true;
+                }
+            }
+            if(encontrado==false){
+                cout << "No se encontró en producto en el inventario"<<endl<<endl;
+            }
+            cout<<"0. Finalizar"<<endl;
+            cout<<"Cualquier otro valor, continuar agregando"<<endl;
+            cin >> valor;
+        }
+        cout <<"---------------------------------" <<endl;
+        for(auto par=begin(CombosInv); par!=end(CombosInv); par++){
+            cout <<"Combo: "<< par->first <<endl;
+            cout <<"Id:    Cantidad:" <<endl;
+            for(auto emp=begin(par->second);emp!=end(par->second); emp++){
+             cout<< emp->id<<"     "<<emp->cantidad<<endl<<endl;
+            }
+            cout <<"---------------------------------" <<endl<<endl;
+        }
+        return CombosInv;
+    } catch (char exepcion) {
+        if(exepcion=='1'){
+            cout << "producto no encontrado en el inventario"<<endl;
+        }
+        return CombosInv;
+    }
+}
+void GuardarCombos(map<int,vector<Combo>> CombosInv){
+    ofstream escritura;
+    escritura.open("combos.txt",ios::out);
+    for(auto par=begin(CombosInv); par!=end(CombosInv); par++){
+        escritura << "* ";
+        escritura << par->first;
+        escritura << "\n";
+        for(auto emp=begin(par->second);emp!=end(par->second); emp++){
+            escritura << emp->id;
+            escritura <<" ";
+            escritura <<emp->cantidad;
+            escritura <<"\n";
+        }
+    }
+    escritura.close();
 
 
+}
 
 
 

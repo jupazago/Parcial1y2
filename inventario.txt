@@ -9,5 +9,5 @@
 9 gaseosa_grande 100 7000
 10 gaseosa_mediana 150 6200
 11 gaseosa_pequenia 175 5400
-12 agua 200 3800
-13 mym 250 5000
+12 agua 200 3900
+13 mym 100 6900

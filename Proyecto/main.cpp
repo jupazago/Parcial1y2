@@ -212,46 +212,88 @@ map<int,Producto> AgregarActualizar(map<int,Producto> Inventario){
         Producto producto;
         bool encontrado=false;
         int ncantidad, ncosto;
-        int nombre;
-        cout << "Ingresa ID del producto: ";
-        cin >> nombre;
+        int id;
+        cout << "Actualizar producto ingresa su ID, o crear producto ingresa 0: ";
+        cin >> id;
+
+        if(id!=0){
+            for(auto par=begin(Inventario); par!=end(Inventario); par++){
+                //cout <<"ID: "<< par->first <<endl;
+                if(par->first == id && encontrado==false){
+
+                    cout << "Producto: "<<par->second.nombre<<endl<<endl;
+                    cout << "La cantidad actual es: "<< par->second.cantidad<<endl;
+                    cout << "La Nueva cantidad sera: ";
+                    cin >> ncantidad;
+                    par->second.cantidad = ncantidad;
+
+                    cout << "El precio actual por unidad es: "<< par->second.costo<<endl;
+                    cout << "El nuevo precio por unidad sera: ";
+                    cin >> ncosto;
+                    par->second.costo = ncosto;
+                    encontrado=true;
 
 
-        for(auto par=begin(Inventario); par!=end(Inventario); par++){
-            //cout <<"ID: "<< par->first <<endl;
-            if(par->first == nombre && encontrado==false){
+                    ofstream escritura;
+                    escritura.open("inventario.txt", ios::out);
 
-                cout << "El producto "<<par->second.nombre<<" ya existe"<<endl<<endl;
-                cout << "La cantidad actual es: "<< par->second.cantidad<<endl;
-                cout << "La Nueva cantidad sera: ";
-                cin >> ncantidad;
-                par->second.cantidad = ncantidad;
+                    int i=1;
+                    for(auto par=begin(Inventario); par!=end(Inventario); par++){
+                        //Cantidad de iteraciones por elemento de inventario
+                        if(i==1){
+                            escritura << i<<" "<< par->second.nombre <<" "<<par->second.cantidad <<" "<<par->second.costo;
+                            i++;
+                        }else{
+                            escritura <<"\n"<< i<<" "<< par->second.nombre <<" "<<par->second.cantidad <<" "<<par->second.costo;
+                            i++;
+                        }
 
-                cout << "El precio actual por unidad es: "<< par->second.costo<<endl;
-                cout << "El nuevo precio por unidad sera: ";
-                cin >> ncosto;
-                par->second.costo = ncosto;
-                encontrado=true;
+                    }
+
+
+                }
             }
         }
 
+
         if(encontrado!=true){
-            cout << "Ingresa Cantidad producto";
+            system("cls");
+            cout << "     Registrar Producto"<<endl;
+            cout << "-----------------------------"<<endl;
+            string nombre;
+            cout << "Ingresa Nombre producto";
+            cin >> nombre;
+            cout <<endl<< "Ingresa Cantidad producto";
             cin >> ncantidad;
-            cout << "Ingresa Costo por unidad del producto";
+            cout <<endl<< "Ingresa el Costo";
             cin >> ncosto;
+
             producto.nombre=nombre;
             producto.cantidad=ncantidad;
             producto.costo=ncosto;
+
             int i=0;
             for(auto par=begin(Inventario); par!=end(Inventario); par++){
                 //Cantidad de iteraciones por elemento de inventario
                 i++;
             }
 
+
             Inventario[i]=producto;
+
+            ofstream escritura;
+            escritura.open("inventario.txt", ios::app);
+            escritura << "\n" << i<<" "<<nombre<<" "<< ncantidad<<" "<<ncosto;
+            escritura.close();
+
             cout << "Creacion exitosa"<<endl;
             ImprimirInventario(Inventario);
+
+
+
+
+
+
 
         }else{
             cout << "Actualizacion exitosa"<<endl;

@@ -5,6 +5,8 @@
 #include <stdlib.h> //cls // Limpiar consola
 #include <map>
 #include <vector>
+#include <sstream>
+
 
 using namespace std;
 
@@ -14,6 +16,10 @@ struct Producto{
     int cantidad;
     int costo;
 };
+struct Combo{
+    int id;
+    int cantidad;
+};
 
 void Panel1();
 void Panel2();
@@ -22,6 +28,7 @@ void CrearUsuario();
 map<int,Producto> lecturaDeInventario();
 map<int,Producto> AgregarActualizar(map<int,Producto> Inventario);
 void ImprimirInventario(map<int,Producto> Inventario);
+void VerCombos();
 
 int main()
 {
@@ -32,10 +39,12 @@ int main()
 
     while (admOuser > 0) {
         system("cls");
-        Panel1();//Menu principal
+        //Menu principal
+        Panel1();
         cin >> admOuser;
 
         if(admOuser==1) {
+            //Menu de Administrador
             system("cls");
             //Ingresaremos datos para compararlos con el txt
             perfilAdm=IniciarSesion();
@@ -51,11 +60,14 @@ int main()
                     Inventario = lecturaDeInventario();//Llenamos el Inventario del txt
                     Inventario = AgregarActualizar(Inventario);
 
+                }else if(opcion==3){
+                    VerCombos();
+
                 }
             }
 
         }else if(admOuser==2) {
-
+            //Menu de cliente
         }
     }
 
@@ -317,3 +329,56 @@ void ImprimirInventario(map<int,Producto> Inventario){
         cout << "-------------------"<<endl;
     }
 }
+void VerCombos(){
+    string dato;
+    int ID, n1, n2;
+
+    try {
+        map<int,vector<Combo>> contenedor;
+        Combo estrCombo;
+
+
+        ifstream lectura;
+        lectura.open("combos.txt",ios::in);
+
+        while (!lectura.eof()) {
+            lectura >> dato;
+            if(dato == "*"){
+                lectura >> dato;
+                istringstream(dato) >> ID;
+                lectura >> dato;
+            }
+            if(dato!="*"){
+                istringstream(dato) >> n1;
+                estrCombo.id = n1;
+
+                lectura >> dato;
+                istringstream(dato) >> n2;
+                estrCombo.cantidad = n2;
+
+                contenedor[ID].push_back(estrCombo);
+            }
+        }
+        cout <<"---------------------------------" <<endl<<endl;
+        for(auto par=begin(contenedor); par!=end(contenedor); par++){
+            cout <<"Combo: "<< par->first <<endl;
+            cout <<"Id:          Cantidad:" <<endl;
+            for(auto emp=begin(par->second);emp!=end(par->second); emp++){
+             cout<< emp->id<<"                 "<<emp->cantidad<<endl<<endl;
+            }
+            cout <<"---------------------------------" <<endl<<endl;
+        }
+    } catch (char excepcion) {
+        cout << "Error"<<endl;
+    }
+}
+
+
+
+
+
+
+
+
+
+

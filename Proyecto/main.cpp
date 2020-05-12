@@ -10,46 +10,60 @@
 
 using namespace std;
 
-//Estructuran Publica
+//Estructuras Publicas
+
+//Caracteristicas de cada producto del inventario
 struct Producto{
+    //campos
     string nombre;
     int cantidad;
     int costo;
 };
+//Caracteristicas de cada combo perteneciente en el inventario
 struct Combo{
+    //campos
     int id;
     int cantidad;
 };
 
-void Panel1();
-void Panel2();
-bool IniciarSesion();
-void CrearUsuario();
-map<int,Producto> lecturaDeInventario();
-map<int,Producto> AgregarActualizar(map<int,Producto> Inventario);
-void ImprimirInventario(map<int,Producto> Inventario);
-map<int,vector<Combo>> VerCombos(map<int,vector<Combo>> CombosInv);
-map<int,vector<Combo>> crearCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario);
-void GuardarCombos(map<int,vector<Combo>> CombosInv);
+void Panel1();//menu Principal
+void Panel2();//Menu Admin
+void Panel3();//Menu Cliente
+bool IniciarSesion();//Admin
+bool IniciarSesionC();//Cliente
+void CrearUsuario();//Admin
+void CrearUsuarioC();//Cliente
+map<int,Producto> lecturaDeInventario();//lectura de inventario.txt
+map<int,Producto> AgregarActualizar(map<int,Producto> Inventario);//actualizar/escritura inventario.txt
+void ImprimirInventario(map<int,Producto> Inventario);//por consola
+void ImprimirCombos(map<int,vector<Combo>> CombosInv);//por consola, para pruebas, sin detalles por consola
+map<int,vector<Combo>> ImprimirCombos2(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario); //imprime con detalles todos los combos
+map<int,vector<Combo>> crearCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario); //añade un nuevo combo a combos.txt
+void GuardarCombos(map<int,vector<Combo>> CombosInv);//Se actualiza el inventario de combos.txt
+
 
 int main()
 {
-    int admOuser=1, opcion;
-    bool perfilAdm;
+    int admOuser=1, opcion, valorClient;
+    bool perfilAdm=false, perfilClient=false;
 
-    map<int,Producto> Inventario; //Vacío
+    //Mapa de estructuras, de  Inventario
+    map<int,Producto> Inventario; //Vacio
 
-    map<int,vector<Combo>> CombosInv;
+    //Mapa de Vector de estructuras, de  Combos
+    map<int,vector<Combo>> CombosInv;//vacio
 
+    //Menu principal
     while (admOuser > 0) {
         system("cls");
-        //Menu principal
         Panel1();
         cin >> admOuser;
 
         if(admOuser==1) {
             //Menu de Administrador
+
             system("cls");
+
             //Ingresaremos datos para compararlos con el txt
             perfilAdm=IniciarSesion();
             //true si se inicio con exito la sesion
@@ -66,33 +80,73 @@ int main()
 
                 }else if(opcion==3){
                     Inventario = lecturaDeInventario();//Visualizamos el inventario
-                    CombosInv = VerCombos(CombosInv); //llenar mapa de combos
+                    CombosInv = ImprimirCombos2(CombosInv,Inventario); //llenar mapa de combos
                     CombosInv = crearCombos(CombosInv,Inventario);
                     GuardarCombos(CombosInv);
 
+                }else if(opcion==4){
+
+                }else if(opcion==5){
+                    perfilAdm=false;
+                }else{
+                    cout << "Ingresa un valor valido";
                 }
             }
 
         }else if(admOuser==2) {
             //Menu de cliente
+
+            system("cls");
+            //Ingresaremos datos para compararlos con el txt
+            cout<<"1. Crear Usuario Cliente"<<endl;
+            cout<<"2. Iniciar sesion Cliente"<<endl;
+            cin >> valorClient;
+            if(valorClient==1){
+                CrearUsuarioC();
+            }else {
+                perfilClient = IniciarSesionC();
+            }
+
+            while(perfilClient==true){
+                Panel3();
+                cin >> opcion;
+                if(opcion==1){
+                    Inventario = lecturaDeInventario();//Visualizamos el inventario
+                    CombosInv = ImprimirCombos2(CombosInv,Inventario); //llenar mapa de combos
+
+                }else if(opcion==2){
+                    perfilAdm=false;
+
+                }else{
+                    cout << "Ingresa un valor valido";
+                }
+            }
         }
     }
 
     return 0;
 }
 void Panel1(){
-    cout << "OPCIONES: INICIAR SESION:" << endl;
-    cout << "/////////////////////////" << endl;
+    cout << "       Bienvenidos a Cinema Jupazago:" << endl;
+    cout << "Inicia sesion" << endl;
+    cout << "-------------------------------------" << endl;
     cout << "1: Administrador" << endl;
     cout << "2: Usuario/Cliente" << endl<<endl;
     cout << "Eleccion: ";
 }
 void Panel2(){
-    cout << "/////////////////////////" << endl;
+    cout << "-----------------------------------" << endl;
     cout << "1: Crear Otra cuenta Administracion" << endl;
     cout << "2: Agregar/Actualizar producto Inventario" << endl;
     cout << "3: Crear combos" << endl;
-    cout << "4: Generar Reporte de Ventas" << endl<<endl;
+    cout << "4: Generar Reporte de Ventas" << endl;
+    cout << "5: Cerrar Sesion"<<endl<<endl;
+    cout << "Eleccion: ";
+}
+void Panel3(){
+    cout << "----------------------------------" << endl;
+    cout << "1: Haz tu compra" << endl;
+    cout << "2: Cerrar Sesion"<<endl<<endl;
     cout << "Eleccion: ";
 }
 bool IniciarSesion(){
@@ -141,7 +195,7 @@ bool IniciarSesion(){
 
         if(pass==clave){
             system("cls");
-            cout << "Hola administrador"<<endl;
+            cout << "   Hola administrador"<<endl;
             return true;
         }else{
             throw '2';
@@ -159,36 +213,180 @@ bool IniciarSesion(){
         return false;
     }
 }
-void CrearUsuario(){
-    string usuario, contrasenia;
-    bool quedarse=false;
-    int tcontrasenia;
+bool IniciarSesionC(){
+    /*  Mediante archivo txt consultaremos si los datos suministrados
+     *  son correctos para el inicio de sesion
+     */
 
-    system("cls");
-    cout << endl<<"Tenga en Cuenta"<<endl;
-    cout << "*La clave debe tene unicamente 4 digitos"<<endl;
+    string userBD, passBD, user, pass, texto;
 
-    cout<<endl<<"Ingrese el usuario a registrar: ";
-    cin >> usuario;
+    ifstream lectAdmin;
 
-    while(quedarse==false){
-        cout<<endl<<"Ingrese la clave: ";
-        cin >> contrasenia;
-        tcontrasenia = contrasenia.size();
-        if(tcontrasenia==4){
-            quedarse=true;
+    try {
+        lectAdmin.open("cliente.txt", ios::in); //abro archivo para su lectura
+        if(!lectAdmin.is_open())
+            throw '1'; //Capturamos excepcion si hubo errores
+
+        while(!lectAdmin.eof()){ //mientras no sea el final del archivo
+            //Obtenemos los datos de la base de datos del unico admin
+            getline(lectAdmin,texto);
+        }
+        lectAdmin.close();
+
+        cout << texto<<endl<<endl;
+        cout << "Ingresar Usuario: ";
+        cin >> user;
+        cout << "Contrasenia: ";
+        cin >> pass;
+
+        int tamano_user= user.size();
+
+        if (texto.find(user) != string::npos) {
+            //Si se encuentra el usuario continuamos
+
+        } else{
+            //Si no existe el usuario capturamos la excepcion
+            throw '3';
+        }
+
+        //Comparamos la clave ingresada por el usuario vs la registrada en el txt
+        size_t pos1 = texto.find(user);
+        texto = texto.substr(pos1);
+        //cout << texto<<endl<<endl; //Buscar el usuario
+        string clave = texto.substr(tamano_user+1,4);
+        //cout <<endl<<clave<<endl;
+
+
+        if(pass==clave){
+            system("cls");
+            cout << "   Hola Cliente"<<endl;
+            return true;
         }else{
-            quedarse=false;
+            throw '2';
+        }
+
+    } catch (char excepcion) {
+        if(excepcion == '1'){
+            cout << "Error de lectura"<<endl;
+        }else if(excepcion == '2'){
+            cout << "Datos Incorrectos"<<endl;
+        }else if(excepcion == '3'){
+            cout << "Usuario incorrecto"<<endl;
+        }
+        system("pause");
+        return false;
+    }
+}
+void CrearUsuarioC(){
+    ifstream lectAdmin;
+    try {
+        string usuario, contrasenia, texto;
+        bool quedarse=false;
+        int tcontrasenia;
+        lectAdmin.open("cliente.txt", ios::in); //abro archivo para su lectura
+        if(!lectAdmin.is_open())
+            throw '1'; //Capturamos excepcion si hubo errores
+
+        while(!lectAdmin.eof()){ //mientras no sea el final del archivo
+            //Obtenemos los datos de la base de datos del unico admin
+            getline(lectAdmin,texto);
+        }
+        lectAdmin.close();
+
+        system("cls");
+        cout << endl<<"Tenga en Cuenta"<<endl;
+        cout << "*La clave debe tene unicamente 4 digitos"<<endl;
+
+        cout<<endl<<"Ingrese el usuario a registrar: ";
+        cin >> usuario;
+        if (texto.find(usuario) != string::npos) {
+            //Si se encuentra el usuario capturar la excepcion
+            throw '2';
+
+        } else{
+            //Si no existe el usuario continuamos con el proceso
+
+        }
+
+        while(quedarse==false){
+            cout<<endl<<"Ingrese la clave numerica: ";
+            cin >> contrasenia;
+            tcontrasenia = contrasenia.size();
+            if(tcontrasenia==4){
+                quedarse=true;
+            }else{
+                quedarse=false;
+            }
+        }
+
+        string datos= " "+usuario+" "+contrasenia;
+
+        ofstream escritura;
+        //guardar en el texto de base de datos
+        escritura.open("cliente.txt",ios::app);
+        escritura << datos;
+        escritura.close();
+    } catch (char excepcion) {
+        if(excepcion=='1'){
+            cout << "Error de lectura de archivo cliente.txt"<<endl;
+        }if(excepcion=='2'){
+            cout << "Usuario ya existe con ese nombre"<<endl;
         }
     }
+}
+void CrearUsuario(){
+    ifstream lect;
+    try {
+        string usuario, contrasenia, texto;
+        bool quedarse=false;
+        int tcontrasenia;
+        lect.open("cliente.txt", ios::in); //abro archivo para su lectura
+        if(!lect.is_open())
+            throw '1'; //Capturamos excepcion si hubo errores
 
-    string datos= " "+usuario+" "+contrasenia;
+        while(!lect.eof()){ //mientras no sea el final del archivo
+            //Obtenemos los datos de la base de datos del unico admin
+            getline(lect,texto);
+        }
+        lect.close();
 
-    ofstream escritura;
-    //guardar en el texto de base de datos
-    escritura.open("administrador.txt",ios::app);
-    escritura << datos;
-    escritura.close();
+        system("cls");
+        cout << endl<<"Tenga en Cuenta"<<endl;
+        cout << "*La clave debe tene unicamente 4 digitos"<<endl;
+        cout<<endl<<"Ingrese el usuario a registrar: ";
+        cin >> usuario;
+        if (texto.find(usuario) != string::npos) {
+            //Si se encuentra el usuario capturar la excepcion
+            throw '2';
+        } else{
+            //Si no existe el usuario continuamos con el proceso
+        }
+        while(quedarse==false){
+            cout<<endl<<"Ingrese la clave numerica: ";
+            cin >> contrasenia;
+            tcontrasenia = contrasenia.size();
+            if(tcontrasenia==4){
+                quedarse=true;
+            }else{
+                quedarse=false;
+            }
+        }
+
+        string datos= " "+usuario+" "+contrasenia;
+
+        ofstream escritura;
+        //guardar en el texto de base de datos
+        escritura.open("cliente.txt",ios::app);
+        escritura << datos;
+        escritura.close();
+    } catch (char excepcion) {
+        if(excepcion=='1'){
+            cout << "Error de lectura de archivo cliente.txt"<<endl;
+        }
+        if(excepcion=='2'){
+            cout << "Usuario ya existe con ese nombre"<<endl;
+        }
+    }
 }
 map<int,Producto> lecturaDeInventario(){
     string NombreProdu;
@@ -226,8 +424,6 @@ map<int,Producto> lecturaDeInventario(){
 }
 map<int,Producto> AgregarActualizar(map<int,Producto> Inventario){
     try {
-
-
         Producto producto;
         bool encontrado=false;
         int ncantidad, ncosto;
@@ -268,8 +464,6 @@ map<int,Producto> AgregarActualizar(map<int,Producto> Inventario){
                         }
 
                     }
-
-
                 }
             }
         }
@@ -307,13 +501,6 @@ map<int,Producto> AgregarActualizar(map<int,Producto> Inventario){
 
             cout << "Creacion exitosa"<<endl;
             ImprimirInventario(Inventario);
-
-
-
-
-
-
-
         }else{
             cout << "Actualizacion exitosa"<<endl;
             ImprimirInventario(Inventario);
@@ -336,9 +523,21 @@ void ImprimirInventario(map<int,Producto> Inventario){
         cout << "-------------------"<<endl;
     }
 }
-map<int,vector<Combo>> VerCombos(map<int,vector<Combo>> contenedor){
+void ImprimirCombos(map<int,vector<Combo>> CombosInv){
+    cout <<endl<<endl<< "Lista Completa de Combos"<<endl;
+    cout << "-----------------------------"<<endl;
+    for(auto par=begin(CombosInv); par!=end(CombosInv); par++){
+        cout <<"Combo: "<< par->first <<endl;
+        cout <<"Id:    Cantidad:" <<endl;
+        for(auto emp=begin(par->second);emp!=end(par->second); emp++){
+         cout<< emp->id<<"     "<<emp->cantidad<<endl<<endl;
+        }
+        cout <<"---------------------------------" <<endl<<endl;
+    }
+}
+map<int,vector<Combo>> ImprimirCombos2(map<int,vector<Combo>> contenedor,map<int,Producto> Inventario){
     string dato;
-    int ID, n1, n2;
+    int ID, n1, n2, precioCombo;
 
     try {
         Combo estrCombo;
@@ -365,16 +564,25 @@ map<int,vector<Combo>> VerCombos(map<int,vector<Combo>> contenedor){
                 contenedor[ID].push_back(estrCombo);
             }
         }
-        /*
+        precioCombo = 0;
         cout <<"---------------------------------" <<endl;
         for(auto par=begin(contenedor); par!=end(contenedor); par++){
-            cout <<"Combo: "<< par->first <<endl;
-            cout <<"Id:    Cantidad:" <<endl;
+            cout <<"Combo: #"<< par->first <<endl;
+            cout <<"Id:  Cantidad:    Nombre:" <<endl;
             for(auto emp=begin(par->second);emp!=end(par->second); emp++){
-             cout<< emp->id<<"     "<<emp->cantidad<<endl<<endl;
+                for(auto par=begin(Inventario); par!=end(Inventario); par++){
+                    if(emp->id==par->first){
+                        precioCombo=precioCombo+(par->second.costo * emp->cantidad);
+                        cout<< emp->id<<"     "<<emp->cantidad<<"            "<<par->second.nombre<<endl;
+                    }
+                }
             }
-            cout <<"---------------------------------" <<endl<<endl;
-        }*/
+            precioCombo*=0.9;
+            cout <<endl<< "Precio del combo:  "<<precioCombo;
+            cout <<endl<<"---------------------------------" <<endl<<endl;
+            precioCombo = 0;
+        }
+        system("pause");
         return contenedor;
     } catch (char excepcion) {
         cout << "Error"<<endl;
@@ -423,14 +631,7 @@ map<int,vector<Combo>> crearCombos(map<int,vector<Combo>> CombosInv,map<int,Prod
             cin >> valor;
         }
         cout <<"---------------------------------" <<endl;
-        for(auto par=begin(CombosInv); par!=end(CombosInv); par++){
-            cout <<"Combo: "<< par->first <<endl;
-            cout <<"Id:    Cantidad:" <<endl;
-            for(auto emp=begin(par->second);emp!=end(par->second); emp++){
-             cout<< emp->id<<"     "<<emp->cantidad<<endl<<endl;
-            }
-            cout <<"---------------------------------" <<endl<<endl;
-        }
+        //ImprimirCombos(CombosInv);
         return CombosInv;
     } catch (char exepcion) {
         if(exepcion=='1'){
@@ -454,8 +655,6 @@ void GuardarCombos(map<int,vector<Combo>> CombosInv){
         }
     }
     escritura.close();
-
-
 }
 
 

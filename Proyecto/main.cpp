@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 #include <sstream>
+#include <ctime> //obtener fecha actual
 
 
 using namespace std;
@@ -36,11 +37,12 @@ void CrearUsuarioC();//Cliente
 map<int,Producto> lecturaDeInventario();//lectura de inventario.txt
 map<int,Producto> AgregarActualizar(map<int,Producto> Inventario);//actualizar/escritura inventario.txt
 void ImprimirInventario(map<int,Producto> Inventario);//por consola
-void ImprimirCombos(map<int,vector<Combo>> CombosInv);//por consola, para pruebas, sin detalles por consola
+void ImprimirCombos(map<int,vector<Combo>> CombosInv);//ara PRUEBAS, sin detalles por consola
 map<int,vector<Combo>> ImprimirCombos2(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario); //imprime con detalles todos los combos
 map<int,vector<Combo>> crearCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario); //añade un nuevo combo a combos.txt
 void GuardarCombos(map<int,vector<Combo>> CombosInv);//Se actualiza el inventario de combos.txt
-
+void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario);//Transaccion
+string obtenerFecha();
 
 int main()
 {
@@ -80,6 +82,7 @@ int main()
 
                 }else if(opcion==3){
                     Inventario = lecturaDeInventario();//Visualizamos el inventario
+                    ImprimirInventario(Inventario);
                     CombosInv = ImprimirCombos2(CombosInv,Inventario); //llenar mapa de combos
                     CombosInv = crearCombos(CombosInv,Inventario);
                     GuardarCombos(CombosInv);
@@ -87,6 +90,9 @@ int main()
                 }else if(opcion==4){
 
                 }else if(opcion==5){
+                    Inventario = lecturaDeInventario();//Visualizamos el inventario
+                    CombosInv = ImprimirCombos2(CombosInv,Inventario);//Visualizamos los Combos
+                }else if(opcion==6){
                     perfilAdm=false;
                 }else{
                     cout << "Ingresa un valor valido";
@@ -112,8 +118,8 @@ int main()
                 cin >> opcion;
                 if(opcion==1){
                     Inventario = lecturaDeInventario();//Visualizamos el inventario
-                    CombosInv = ImprimirCombos2(CombosInv,Inventario); //llenar mapa de combos
-
+                    CombosInv = ImprimirCombos2(CombosInv,Inventario); //visualizar combos
+                    CompraDeCombos(CombosInv,Inventario);
                 }else if(opcion==2){
                     perfilAdm=false;
 
@@ -140,7 +146,8 @@ void Panel2(){
     cout << "2: Agregar/Actualizar producto Inventario" << endl;
     cout << "3: Crear combos" << endl;
     cout << "4: Generar Reporte de Ventas" << endl;
-    cout << "5: Cerrar Sesion"<<endl<<endl;
+    cout << "5: Ver Inventario y Combos"<<endl<<endl;
+    cout << "6: Cerrar Sesion"<<endl<<endl;
     cout << "Eleccion: ";
 }
 void Panel3(){
@@ -416,7 +423,7 @@ map<int,Producto> lecturaDeInventario(){
 
     lectura.close();
 
-    ImprimirInventario(Inventario);
+    //ImprimirInventario(Inventario);
     system("pause");
 
     return Inventario;
@@ -565,7 +572,7 @@ map<int,vector<Combo>> ImprimirCombos2(map<int,vector<Combo>> contenedor,map<int
             }
         }
         precioCombo = 0;
-        cout <<"---------------------------------" <<endl;
+        cout <<"--------------------------------------" <<endl;
         for(auto par=begin(contenedor); par!=end(contenedor); par++){
             cout <<"Combo: #"<< par->first <<endl;
             cout <<"Id:  Cantidad:    Nombre:" <<endl;
@@ -573,13 +580,13 @@ map<int,vector<Combo>> ImprimirCombos2(map<int,vector<Combo>> contenedor,map<int
                 for(auto par=begin(Inventario); par!=end(Inventario); par++){
                     if(emp->id==par->first){
                         precioCombo=precioCombo+(par->second.costo * emp->cantidad);
-                        cout<< emp->id<<"     "<<emp->cantidad<<"            "<<par->second.nombre<<endl;
+                        cout<< emp->id<<"    X"<<emp->cantidad<<"            "<<par->second.nombre<<endl;
                     }
                 }
             }
             precioCombo*=0.9;
             cout <<endl<< "Precio del combo:  "<<precioCombo;
-            cout <<endl<<"---------------------------------" <<endl<<endl;
+            cout <<endl<<"--------------------------------------" <<endl<<endl;
             precioCombo = 0;
         }
         system("pause");
@@ -656,10 +663,72 @@ void GuardarCombos(map<int,vector<Combo>> CombosInv){
     }
     escritura.close();
 }
+void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario){
+    int NdeCombo, precioCombo=0;
+    bool compra=false, verificacion=false;
+    string Sino;
+
+    cout << "Ingresa el # de combo que deseas llevar"<<endl;
+    cin >> NdeCombo;
+
+    while (compra==false) {
+        for(auto par=begin(CombosInv); par!=end(CombosInv); par++){
+            if(NdeCombo==par->first){
+                cout <<"Combo: #"<< par->first <<endl;
+                for(auto emp=begin(par->second);emp!=end(par->second); emp++){
+                    for(auto par=begin(Inventario); par!=end(Inventario); par++){
+                        if(emp->id==par->first){
+                            precioCombo=precioCombo+(par->second.costo * emp->cantidad);
+                        }
+                    }
+                }
+                precioCombo*=0.9;
+                cout <<endl<< "Precio del combo:  "<<precioCombo;
+                cout <<endl<<"--------------------------------------" <<endl<<endl;
+            }
+        }
+        while (verificacion==false) {
+            cout << "Es correcta tu eleccion?"<<endl;
+            cout << "si / no"<<endl;
+            cin >> Sino;
+            if(Sino=="si" || Sino=="no"){
+                verificacion=true;
+            }
+        }
+        if(Sino=="si"){
+            compra=true;
+        }
+    }
+    cout << obtenerFecha()<<endl;
 
 
+}
 
 
+string obtenerFecha(){
+    time_t t = time(NULL);
+        tm* tiempo = localtime(&t);
+
+    stringstream ss_anio;
+    ss_anio << tiempo->tm_year+1900;
+    string anio = ss_anio.str();
+
+    stringstream ss_mes;
+    ss_mes << tiempo->tm_mon+1;
+    string mes = ss_mes.str();
+    if(atoi(mes.c_str()) < 10)
+        mes = "0"+mes;
+
+    stringstream ss_dia;
+    ss_dia << tiempo->tm_mday;
+    string dia = ss_dia.str();
+    if(atoi(dia.c_str()) < 10)
+        dia = "0"+dia;
+
+    string Fecha = anio+" "+mes+" "+dia;
+
+    return Fecha;
+}
 
 
 

@@ -44,6 +44,8 @@ void GuardarCombos(map<int,vector<Combo>> CombosInv);//Se actualiza el inventari
 void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario,string cliente);//Transaccion
 string obtenerFecha();
 void funcion_cine1();
+bool pago(int precioCombo);
+void imprimirFacturas();
 
 int main()
 {
@@ -89,7 +91,7 @@ int main()
                     GuardarCombos(CombosInv);
 
                 }else if(opcion==4){
-
+                    imprimirFacturas();
                 }else if(opcion==5){
                     Inventario = lecturaDeInventario();//Visualizamos el inventario
                     CombosInv = ImprimirCombos2(CombosInv,Inventario);//Visualizamos los Combos
@@ -123,7 +125,7 @@ int main()
                     CombosInv = ImprimirCombos2(CombosInv,Inventario); //visualizar combos
                     CompraDeCombos(CombosInv,Inventario, cliente);
                 }else if(opcion==2){
-                    perfilAdm=false;
+                    perfilClient=false;
 
                 }else{
                     cout << "Ingresa un valor valido";
@@ -675,6 +677,7 @@ void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventari
     cin >> NdeCombo;
 
     while (compra==false) {
+        verificacion=false;
         for(auto par=begin(CombosInv); par!=end(CombosInv); par++){
             if(NdeCombo==par->first){
                 cout <<"Combo: #"<< par->first <<endl;
@@ -698,6 +701,11 @@ void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventari
                 verificacion=true;
             }
         }
+        if(Sino=="no"){
+            precioCombo=0;
+            cout << "Ingresa el # de combo que deseas llevar"<<endl;
+            cin >> NdeCombo;
+        }
         if(Sino=="si"){
             compra=true;
         }
@@ -705,27 +713,35 @@ void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventari
     /*  Consultar si hay productos disponibles en el inventario
     *   si hay disponibilidad, actualiza el inventario
     */
-    bool disponibilidad= false;
-
+    bool disponibilidad[2]= {false,false};
+    //par ID combos
     for(auto par=begin(CombosInv); par!=end(CombosInv); par++){
-        for(auto emp=begin(par->second);emp!=end(par->second); emp++){
-            //siguiente for de inventario
-            for(auto par=begin(Inventario); par!=end(Inventario); par++){
-                if(emp->id==par->first){
-                    //cout<< emp->id<<"    X"<<emp->cantidad<<"            "<<par->second.nombre<<endl;
-                    if((emp->cantidad)-2 >=0){
-                        emp->cantidad -= 2;
-                        disponibilidad=true;
-                    }else{
-                        disponibilidad=false;
-                        cout << "Cantidad insuficiente en el inventario"<<endl;
+        //emp Vector
+        if(NdeCombo==par->first){
+            for(auto emp=begin(par->second);emp!=end(par->second); emp++){
+                //siguiente for de inventario
+
+                for(auto par2=begin(Inventario); par2!=end(Inventario); par2++){
+                    //par2->second.cantidad cantidad del inventario
+                    if(emp->id == par2->first){
+                        //emp->id------emp->cantidad------par->second.nombre<<endl;
+                        if((par2->second.cantidad)-2 >=0){
+                            cout << "Cantidad I " << par2->second.cantidad<<endl;
+                            cout << "Cantidad C " << emp->cantidad<<endl;
+                            par2->second.cantidad -= emp->cantidad;
+                            disponibilidad[0]=true;
+                        }else{
+                            disponibilidad[0]=false;
+                            cout << "Cantidad insuficiente en el inventario"<<endl;
+                        }
                     }
                 }
             }
         }
     }
-
-    if(disponibilidad==true){
+    disponibilidad[1]=pago(precioCombo);
+    if(disponibilidad[0]==true && disponibilidad[1]==true){
+        //actualizar inventario
         ofstream escritura;
         escritura.open("inventario.txt", ios::out);
         for(auto par=begin(Inventario); par!=end(Inventario); par++){
@@ -748,7 +764,7 @@ void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventari
         string fecha = obtenerFecha();
         ofstream Factura;
         Factura.open("facturas.txt",ios::app);
-        Factura << fecha<<" "<<precioCombo<<" "<<cliente<<"\n";
+        Factura <<"\n"<<fecha<<" "<<precioCombo<<" "<<cliente;
         Factura.close();
 
         //Variables para el cine
@@ -767,6 +783,7 @@ void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventari
         }
         //preguntar
         system("pause");
+        int sala_cine;
         while(decision==1){
 
             cout << "1. Danos tu ubicacion en la sala de cine" << endl << endl;
@@ -786,7 +803,8 @@ void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventari
             }
 
             //Reservar
-
+            cout << "Ingresa Numero de sala" << endl;
+            cin >> sala_cine;
             cout << "Ingresa Fila a seleccionar: letra A-O" << endl;
             cin >> fila_cine;
             cout << "Ingresa Columna a seleccionar: numero 1-20" << endl;
@@ -794,7 +812,8 @@ void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventari
             //fila_cine-65 FILAS
             //columna_cine-1COLUMNAS
             cine[fila_cine-65][columna_cine-1]="+";
-            break;
+            decision=0;
+
         }
 
         cout << "Exito de compra, se generara su factura"<<endl;
@@ -804,10 +823,13 @@ void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventari
         cout<<"|---------------------|"<<endl;
         cout<<"|      Su factura     |"<<endl;
         cout<<"|---------------------|"<<endl;
-        cout<<"| Valor:       "<<precioCombo<<"      |"<<endl;
-        cout<<"| A nombre de: "<<cliente<<"      |"<<endl;
-        cout<<"| Fila:        "<<fila_cine<<"            |"<<endl;
-        cout<<"| Columna:     "<<columna_cine<<"            |"<<endl;
+        cout<<"| Valor:       "<<precioCombo<<endl;
+        cout<<"|"<<endl;
+        cout<<"| A nombre de: "<<cliente<<endl;
+        cout<<"|"<<endl;
+        cout<<"| Sala:        "<<sala_cine<<endl;
+        cout<<"|"<<endl;
+        cout<<"| Puesto:    "<<fila_cine<<columna_cine<<endl;
         cout<<"|---------------------|"<<endl;
     }
 }
@@ -851,3 +873,101 @@ void funcion_cine1(){
         cout << (i+10);
     }
 }
+
+bool pago(int precioCombo){
+    bool pasa=false;
+    int dinero, billetes_50000,billetes_20000,billetes_10000, billetes_5000, billetes_2000, billetes_1000;
+    int residuo_50000, residuo_20000, residuo_10000, residuo_5000, residuo_2000, residuo_1000;
+    int moneda_500, moneda_200, moneda_100, moneda_50;
+    int residuo_500, residuo_200, residuo_100, residuo_50;
+
+    while(pasa==false){
+        cout <<"Ingrese la cantidad de dinero con la que pagaras"<<endl;
+        cout <<"0. Cancelar trasaccion"<<endl;
+        cin >>dinero;
+        if(dinero>precioCombo){
+            dinero-=precioCombo;
+            precioCombo =dinero;
+
+            billetes_50000 = dinero/50000; //Billetes de 50
+            residuo_50000 = dinero%50000; //sobrante
+
+            billetes_20000 = residuo_50000/20000;
+            residuo_20000 = residuo_50000%20000;
+
+            billetes_10000 = residuo_20000/10000;
+            residuo_10000 = residuo_20000%10000;
+
+            billetes_5000 = residuo_10000/5000;
+            residuo_5000 = residuo_10000%5000;
+
+            billetes_2000 = residuo_5000/2000;
+            residuo_2000 = residuo_5000%2000;
+
+            billetes_1000 = residuo_2000/1000;
+            residuo_1000 = residuo_2000%1000;
+
+            moneda_500 = residuo_1000/500;
+            residuo_500 = residuo_1000%500;
+
+            moneda_200 = residuo_500/200;
+            residuo_200 = residuo_500%200;
+
+            moneda_100 = residuo_200/100;
+            residuo_100 = residuo_200%100;
+
+            moneda_50 = residuo_100/50;
+            residuo_50 = residuo_100%50;
+            cout << "Su Devuelta es : " <<precioCombo<< "\n";
+            cout << "Billetes de 50 mil : " << billetes_50000 << "\n";
+            cout << "Billetes de 20 mil : " << billetes_20000 << "\n";
+            cout << "Billetes de 10 mil : " << billetes_10000 << "\n";
+            cout << "Billetes de 5 mil : " << billetes_5000 << "\n";
+            cout << "Billetes de 2 mil : " << billetes_2000 << "\n";
+            cout << "Billetes de 1 mil : " << billetes_1000 << "\n";
+            cout << "Moneda de 500 : " << moneda_500 << "\n";
+            cout << "Moneda de 200 : " << moneda_200 << "\n";
+            cout << "Moneda de 100 : " << moneda_100 << "\n";
+            cout << "Moneda de 50 : " << moneda_50 << "\n";
+            cout << "Residuo : " << residuo_50 << "\n";
+            system("pause");
+            pasa=true;
+            return true;
+        }else if(dinero==0){
+            return false;
+        }else{
+            pasa=false;
+            cout << "Dinero insuficiente, intentalo de nuevo"<<endl<<endl<<endl;
+        }
+    }
+    return false;
+}
+
+
+
+void imprimirFacturas(){
+    ifstream Factura;
+    string cadena;
+    Factura.open("facturas.txt",ios::in);
+    cout<<"Fecha:        Valor:     Comprador:"<<endl<<endl;
+    while (!Factura.eof()) {
+        Factura >> cadena;
+        cout << cadena<<" ";
+        Factura >> cadena;
+        cout << cadena<<" ";
+        Factura >> cadena;
+        cout << cadena<<"      ";
+        Factura >> cadena;
+        cout << cadena<<"    ";
+        Factura >> cadena;
+        cout << cadena<<endl;
+    }
+    cout << endl<<endl;
+    Factura.close();
+
+}
+
+
+
+
+

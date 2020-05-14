@@ -5,7 +5,7 @@
 #include <stdlib.h> //cls // Limpiar consola
 #include <map>
 #include <vector>
-#include <sstream>
+#include <sstream>  //pasar un string a un int
 #include <ctime> //obtener fecha actual
 
 
@@ -31,7 +31,7 @@ void Panel1();//menu Principal
 void Panel2();//Menu Admin
 void Panel3();//Menu Cliente
 bool IniciarSesion();//Admin
-bool IniciarSesionC();//Cliente
+bool IniciarSesionC(string *cliente);//Cliente
 void CrearUsuario();//Admin
 void CrearUsuarioC();//Cliente
 map<int,Producto> lecturaDeInventario();//lectura de inventario.txt
@@ -41,8 +41,9 @@ void ImprimirCombos(map<int,vector<Combo>> CombosInv);//ara PRUEBAS, sin detalle
 map<int,vector<Combo>> ImprimirCombos2(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario); //imprime con detalles todos los combos
 map<int,vector<Combo>> crearCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario); //añade un nuevo combo a combos.txt
 void GuardarCombos(map<int,vector<Combo>> CombosInv);//Se actualiza el inventario de combos.txt
-void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario);//Transaccion
+void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario,string cliente);//Transaccion
 string obtenerFecha();
+void funcion_cine1();
 
 int main()
 {
@@ -101,6 +102,7 @@ int main()
 
         }else if(admOuser==2) {
             //Menu de cliente
+            string cliente;
 
             system("cls");
             //Ingresaremos datos para compararlos con el txt
@@ -110,7 +112,7 @@ int main()
             if(valorClient==1){
                 CrearUsuarioC();
             }else {
-                perfilClient = IniciarSesionC();
+                perfilClient = IniciarSesionC(&cliente);
             }
 
             while(perfilClient==true){
@@ -119,7 +121,7 @@ int main()
                 if(opcion==1){
                     Inventario = lecturaDeInventario();//Visualizamos el inventario
                     CombosInv = ImprimirCombos2(CombosInv,Inventario); //visualizar combos
-                    CompraDeCombos(CombosInv,Inventario);
+                    CompraDeCombos(CombosInv,Inventario, cliente);
                 }else if(opcion==2){
                     perfilAdm=false;
 
@@ -220,7 +222,7 @@ bool IniciarSesion(){
         return false;
     }
 }
-bool IniciarSesionC(){
+bool IniciarSesionC(string *cliente){
     /*  Mediante archivo txt consultaremos si los datos suministrados
      *  son correctos para el inicio de sesion
      */
@@ -266,6 +268,7 @@ bool IniciarSesionC(){
 
         if(pass==clave){
             system("cls");
+            *cliente=user;
             cout << "   Hola Cliente"<<endl;
             return true;
         }else{
@@ -663,7 +666,7 @@ void GuardarCombos(map<int,vector<Combo>> CombosInv){
     }
     escritura.close();
 }
-void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario){
+void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventario,string cliente){
     int NdeCombo, precioCombo=0;
     bool compra=false, verificacion=false;
     string Sino;
@@ -699,15 +702,120 @@ void CompraDeCombos(map<int,vector<Combo>> CombosInv,map<int,Producto> Inventari
             compra=true;
         }
     }
-    cout << obtenerFecha()<<endl;
+    /*  Consultar si hay productos disponibles en el inventario
+    *   si hay disponibilidad, actualiza el inventario
+    */
+    bool disponibilidad= false;
+
+    for(auto par=begin(CombosInv); par!=end(CombosInv); par++){
+        for(auto emp=begin(par->second);emp!=end(par->second); emp++){
+            //siguiente for de inventario
+            for(auto par=begin(Inventario); par!=end(Inventario); par++){
+                if(emp->id==par->first){
+                    //cout<< emp->id<<"    X"<<emp->cantidad<<"            "<<par->second.nombre<<endl;
+                    if((emp->cantidad)-2 >=0){
+                        emp->cantidad -= 2;
+                        disponibilidad=true;
+                    }else{
+                        disponibilidad=false;
+                        cout << "Cantidad insuficiente en el inventario"<<endl;
+                    }
+                }
+            }
+        }
+    }
+
+    if(disponibilidad==true){
+        ofstream escritura;
+        escritura.open("inventario.txt", ios::out);
+        for(auto par=begin(Inventario); par!=end(Inventario); par++){
+            escritura << par->first;
+            escritura << " ";
+            escritura << par->second.nombre;
+            escritura << " ";
+            escritura << par->second.cantidad;
+            escritura << " ";
+            escritura << par->second.costo;
+            escritura << "\n";
+
+        }
+        escritura.close();
+
+        //obtenerFecha();
+        //cliente
+        //precioCombo
+
+        string fecha = obtenerFecha();
+        ofstream Factura;
+        Factura.open("facturas.txt",ios::app);
+        Factura << fecha<<" "<<precioCombo<<" "<<cliente<<"\n";
+        Factura.close();
+
+        //Variables para el cine
+        string cine[15][20];
+        int decision=1;
+        string auxiliar_cine= {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'};
+        char fila_cine;
+        int columna_cine;
+
+        //Genero salas de cine
+        system("cls");
+        for(int i=0; i<15;i++){
+            for(int j=0;j<20;j++){
+                cine[i][j]="-";
+            }
+        }
+        //preguntar
+        system("pause");
+        while(decision==1){
+
+            cout << "1. Danos tu ubicacion en la sala de cine" << endl << endl;
+            cout<<"------------------------------"<<endl<<endl;
 
 
+            //Imprimir Sala de cine actual
+
+            funcion_cine1();
+            cout << endl;
+            for(int i=0; i<15;i++){
+                cout << auxiliar_cine[i] << "    ";
+                for(int j=0;j<20;j++){
+                    cout << cine[i][j] << "   ";
+                }
+                cout << endl;
+            }
+
+            //Reservar
+
+            cout << "Ingresa Fila a seleccionar: letra A-O" << endl;
+            cin >> fila_cine;
+            cout << "Ingresa Columna a seleccionar: numero 1-20" << endl;
+            cin >> columna_cine;
+            //fila_cine-65 FILAS
+            //columna_cine-1COLUMNAS
+            cine[fila_cine-65][columna_cine-1]="+";
+            break;
+        }
+
+        cout << "Exito de compra, se generara su factura"<<endl;
+        system("pause");
+        system("cls");
+
+        cout<<"|---------------------|"<<endl;
+        cout<<"|      Su factura     |"<<endl;
+        cout<<"|---------------------|"<<endl;
+        cout<<"| Valor:       "<<precioCombo<<"      |"<<endl;
+        cout<<"| A nombre de: "<<cliente<<"      |"<<endl;
+        cout<<"| Fila:        "<<fila_cine<<"            |"<<endl;
+        cout<<"| Columna:     "<<columna_cine<<"            |"<<endl;
+        cout<<"|---------------------|"<<endl;
+    }
 }
 
 
 string obtenerFecha(){
     time_t t = time(NULL);
-        tm* tiempo = localtime(&t);
+    tm* tiempo = localtime(&t);
 
     stringstream ss_anio;
     ss_anio << tiempo->tm_year+1900;
@@ -729,6 +837,17 @@ string obtenerFecha(){
 
     return Fecha;
 }
-
-
-
+void funcion_cine1(){
+    //Imprime puestos
+    cout << "Total de puestos"<<endl;
+    cout << "     ";
+    cout << 1;
+    for(int i=1; i<10;i++){
+        cout << "   ";
+        cout << (i+1);
+    }
+    for(int i=1; i<11;i++){
+        cout << "  ";
+        cout << (i+10);
+    }
+}

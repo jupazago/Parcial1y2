@@ -1009,6 +1009,7 @@ void imprimirFacturas(){
     }
     cout << endl<<endl;
     Factura.close();
+    system("pause");
 
 }
 

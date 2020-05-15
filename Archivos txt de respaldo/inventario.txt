@@ -1,4 +1,4 @@
-1 crispeta_grande 1 13900
+1 crispeta_grande 47 13900
 2 crispeta_mediana 18 11300
 3 crispeta_pequenia 45 9400
 4 perro_caliente 76 8200
